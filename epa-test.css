@@ -1,0 +1,31 @@
+.canvas-container {
+    display: flex;
+    border: 1px solid black;
+    position: absolute;
+    flex-direction: column;
+    height: 300px
+}
+
+#timer {
+    width: 300px;
+    font-weight: bold;
+    background: gray;
+    border: 1px solid black;
+    border-bottom: none;
+    text-align: center
+}
+
+input[type="button"] {
+    position: relative;
+    width: 50%;
+    align-self: center;
+    bottom: 160px;
+    cursor: pointer;
+    padding: 5px 0 18px
+}
+
+#retry,
+#menu {
+    display: none;
+    bottom: 140px
+}
