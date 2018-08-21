@@ -1,12 +1,21 @@
+//https://hereandabove.com/maze/mazeorig.form.html
+
 const canvas = document.getElementById("canvas"),
       ctx = canvas.getContext("2d"),
       rectWidth = 10,
-      rectHeight = 10;
+      rectHeight = 10,
+      interval = 500;
 
 let timer,
-    x = 1,
-    y = 1,
-    currentTime = 59;
+    currentTime,
+    currentLevel = 0,
+    levels = [
+        {image: "https://elliotcallaghan.co.uk/maze.svg", x: 1, y: 1, goalX: 120, goalY: 1},
+        {image: "https://elliotcallaghan.co.uk/maze2.jpg", x: 1, y: 1, goalX: 185, goalY: 285},
+        {image: "https://elliotcallaghan.co.uk/maze3.svg", x: 1, y: 1, goalX: 120, goalY: 1},
+    ],
+    x = levels[currentLevel]["x"],
+    y = levels[currentLevel]["y"];
 
 //show maze and start timer
 $("#start").on("click", function () {
@@ -21,7 +30,6 @@ $("#retry").on("click", function () {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     $(this).css("display", "none");
     $(document).on("keydown", keyListener);
-    currentTime = 59;
     $("#timer").text("Time remaining: 1:00");
     x = 1;
     y = 1;
@@ -35,28 +43,42 @@ $("#menu").on("click", function () {
     $(document).off("keydown", keyListener);
     $("#start").css("display", "block");
     $("#timer").text("Time remaining: 1:00");
-    currentTime = 59;
+    //currentTime = 59;
     x = 1;
     y = 1;
 });
 
 //load maze and draw rectangle and goal
 function drawEverything() {
-    timer = window.setInterval(countdown, 1000);
     let mazeImage = new Image();
+    clearTimeout(timer);
+    $("#timer").text("Time Remaining: 1:00");
+    currentTime = 60;
+    timer = setTimeout(countdown, interval);
     mazeImage.onload = function () {
         ctx.drawImage(mazeImage, 0, 0, 300, 300);
+
         ctx.fillStyle = "rgb(0, 0, 255)";
+        x = levels[currentLevel]["x"];
+        y = levels[currentLevel]["y"];
         ctx.fillRect(x, y, rectWidth, rectHeight);
+
         ctx.fillStyle = "rgba(0, 128, 0, .5)";
-        ctx.fillRect(120, 1, 15, 15);
+        ctx.fillRect(levels[currentLevel]["goalX"], levels[currentLevel]["goalY"], 15, 15);
     };
-    mazeImage.src = "maze.svg";
+    mazeImage.crossOrigin = "anonymous";
+    mazeImage.src = levels[currentLevel]["image"];
 }
 
 //loads timer
 function countdown() {
+    var expected = Date.now() + interval,
+        dt = Date.now() - expected;
+
     --currentTime;
+    expected += interval;
+    timer = setTimeout(countdown, Math.max(0, interval - dt));
+
     if (currentTime.toString().length > 1) {
         $("#timer").text("Time remaining: 0:" + currentTime);
     } else {
@@ -75,6 +97,7 @@ function checkCollision(newX, newY) {
         let pix = ctx.getImageData(newX, newY, 10, 10).data,
             collision = 3,
             i = 0;
+
         for (i; i < 4 * rectWidth * rectHeight; i += 4) {
             if (pix[i] === 0 && pix[i + 1] === 0 && pix[i + 2] === 0 && pix[i + 3]) {
                 collision = 1; //moving into a wall
@@ -84,6 +107,7 @@ function checkCollision(newX, newY) {
                 break;
             }
         }
+
         if (collision === 2 || collision === 3) {
             ctx.fillStyle = "rgb(255, 255, 255)";
             ctx.fillRect(x, y, rectWidth, rectHeight);
@@ -92,9 +116,15 @@ function checkCollision(newX, newY) {
             ctx.fillStyle = "rgb(0, 0, 255)";
             ctx.fillRect(x, y, rectWidth, rectHeight);
             if (collision === 2) {
-                result();
-                ctx.fillText("Success!", canvas.width / 2 - ctx.measureText("Success!").width / 2, canvas.height / 2);
-                $("#menu").css("display", "block");
+                if (currentLevel !== 2) {
+                    currentLevel++;
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    drawEverything();
+                } else {
+                    result();
+                    ctx.fillText("Success!", canvas.width / 2 - ctx.measureText("Success!").width / 2, canvas.height / 2);
+                    $("#menu").css("display", "block");
+                }
             }
         }
     }
