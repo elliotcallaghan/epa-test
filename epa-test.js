@@ -4,10 +4,11 @@ const canvas = document.getElementById("canvas"),
       ctx = canvas.getContext("2d"),
       rectWidth = 10,
       rectHeight = 10,
-      interval = 500;
+      interval = 1000;
 
 let timer,
     currentTime,
+    expected = Date.now() + interval,
     currentLevel = 0,
     levels = [
         {image: "https://elliotcallaghan.co.uk/maze.svg", x: 1, y: 1, goalX: 120, goalY: 1},
@@ -43,7 +44,6 @@ $("#menu").on("click", function () {
     $(document).off("keydown", keyListener);
     $("#start").css("display", "block");
     $("#timer").text("Time remaining: 1:00");
-    //currentTime = 59;
     x = 1;
     y = 1;
 });
@@ -54,26 +54,25 @@ function drawEverything() {
     clearTimeout(timer);
     $("#timer").text("Time Remaining: 1:00");
     currentTime = 60;
-    timer = setTimeout(countdown, interval);
+    countdown();
     mazeImage.onload = function () {
         ctx.drawImage(mazeImage, 0, 0, 300, 300);
 
         ctx.fillStyle = "rgb(0, 0, 255)";
-        x = levels[currentLevel]["x"];
-        y = levels[currentLevel]["y"];
+        x = levels[currentLevel].x;
+        y = levels[currentLevel].y;
         ctx.fillRect(x, y, rectWidth, rectHeight);
 
         ctx.fillStyle = "rgba(0, 128, 0, .5)";
-        ctx.fillRect(levels[currentLevel]["goalX"], levels[currentLevel]["goalY"], 15, 15);
+        ctx.fillRect(levels[currentLevel].goalX, levels[currentLevel].goalY, 15, 15);
     };
     mazeImage.crossOrigin = "anonymous";
-    mazeImage.src = levels[currentLevel]["image"];
+    mazeImage.src = levels[currentLevel].image;
 }
 
 //loads timer
 function countdown() {
-    var expected = Date.now() + interval,
-        dt = Date.now() - expected;
+    let dt = Date.now() - expected;
 
     --currentTime;
     expected += interval;
