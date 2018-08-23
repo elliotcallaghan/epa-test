@@ -4,19 +4,19 @@ const canvas = document.getElementById("canvas"),
       ctx = canvas.getContext("2d"),
       rectWidth = 10,
       rectHeight = 10,
-      interval = 1000;
+      interval = 1000,
+      levels = [
+          {image: "https://elliotcallaghan.co.uk/maze.svg", x: 1, y: 1, goalX: 120, goalY: 1},
+          {image: "https://elliotcallaghan.co.uk/maze2.jpg", x: 1, y: 1, goalX: 185, goalY: 285},
+          {image: "https://elliotcallaghan.co.uk/maze3.svg", x: 1, y: 1, goalX: 120, goalY: 1},
+      ];
 
 let timer,
     currentTime,
     expected = Date.now() + interval,
     currentLevel = 0,
-    levels = [
-        {image: "https://elliotcallaghan.co.uk/maze.svg", x: 1, y: 1, goalX: 120, goalY: 1},
-        {image: "https://elliotcallaghan.co.uk/maze2.jpg", x: 1, y: 1, goalX: 185, goalY: 285},
-        {image: "https://elliotcallaghan.co.uk/maze3.svg", x: 1, y: 1, goalX: 120, goalY: 1},
-    ],
-    x = levels[currentLevel]["x"],
-    y = levels[currentLevel]["y"];
+    x = levels[currentLevel].x,
+    y = levels[currentLevel].y;
 
 //show maze and start timer
 $("#start").on("click", function () {
@@ -32,8 +32,6 @@ $("#retry").on("click", function () {
     $(this).css("display", "none");
     $(document).on("keydown", keyListener);
     $("#timer").text("Time remaining: 1:00");
-    x = 1;
-    y = 1;
     drawEverything();
 });
 
@@ -44,14 +42,12 @@ $("#menu").on("click", function () {
     $(document).off("keydown", keyListener);
     $("#start").css("display", "block");
     $("#timer").text("Time remaining: 1:00");
-    x = 1;
-    y = 1;
 });
 
 //load maze and draw rectangle and goal
 function drawEverything() {
     let mazeImage = new Image();
-    clearTimeout(timer);
+    //clearTimeout(timer);
     $("#timer").text("Time Remaining: 1:00");
     currentTime = 60;
     countdown();
@@ -114,8 +110,8 @@ function checkCollision(newX, newY) {
             y = newY;
             ctx.fillStyle = "rgb(0, 0, 255)";
             ctx.fillRect(x, y, rectWidth, rectHeight);
-            if (collision === 2) {
-                if (currentLevel !== 2) {
+            if (collision === 2) { //goal reached
+                if (currentLevel !== 2) { //if on last level(3)
                     currentLevel++;
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
                     drawEverything();
@@ -131,7 +127,7 @@ function checkCollision(newX, newY) {
 
 //prepare success or fail screen
 function result() {
-    clearInterval(timer);
+    clearTimeout(timer);
     $(document).off("keydown", keyListener);
     ctx.fillStyle = "rgba(255, 255, 255, .8)";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
