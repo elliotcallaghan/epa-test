@@ -6,17 +6,26 @@ const canvas = document.getElementById("canvas"),
       rectHeight = 10,
       interval = 1000,
       levels = [
-          {image: "https://elliotcallaghan.co.uk/maze.svg", x: 1, y: 1, goalX: 120, goalY: 1},
-          {image: "https://elliotcallaghan.co.uk/maze2.jpg", x: 1, y: 1, goalX: 185, goalY: 285},
-          {image: "https://elliotcallaghan.co.uk/maze3.svg", x: 1, y: 1, goalX: 120, goalY: 1},
+          {image: "https://elliotcallaghan.co.uk/maze1.png", x: 1, y: 1, goalX: 30, goalY: 1},
+          {image: "https://elliotcallaghan.co.uk/maze2.png", x: 1, y: 1, goalX: 30, goalY: 1},
+          {image: "https://elliotcallaghan.co.uk/maze3.png", x: 1, y: 1, goalX: 30, goalY: 1},
       ];
 
 let timer,
     currentTime,
-    expected = Date.now() + interval,
+    expected,
     currentLevel = 0,
     x = levels[currentLevel].x,
     y = levels[currentLevel].y;
+
+function intro() {
+    ctx.font = "45px serif";
+    ctx.fillText("Maze Game", canvas.width / 2 - ctx.measureText("Maze Game").width / 2, canvas.height / 4);
+    ctx.font = "20px serif";
+    ctx.fillText("There are three levels.", canvas.width / 2 - ctx.measureText("There are three levels.").width / 2, canvas.height * 0.4);
+    ctx.fillText("You have 1 minute to complete each.", canvas.width / 2 - ctx.measureText("You have 1 minute to complete each.").width / 2, canvas.height / 2);
+    ctx.fillText("Click start to begin.", canvas.width / 2 - ctx.measureText("Click start to begin.").width / 2, canvas.height * 0.6);
+}
 
 //show maze and start timer
 $("#start").on("click", function () {
@@ -42,17 +51,18 @@ $("#menu").on("click", function () {
     $(document).off("keydown", keyListener);
     $("#start").css("display", "block");
     $("#timer").text("Time remaining: 1:00");
+    intro();
 });
 
 //load maze and draw rectangle and goal
 function drawEverything() {
     let mazeImage = new Image();
-    //clearTimeout(timer);
     $("#timer").text("Time Remaining: 1:00");
     currentTime = 60;
+    expected = Date.now() + interval;
     countdown();
     mazeImage.onload = function () {
-        ctx.drawImage(mazeImage, 0, 0, 300, 300);
+        ctx.drawImage(mazeImage, 0, 0, 500, 500);
 
         ctx.fillStyle = "rgb(0, 0, 255)";
         x = levels[currentLevel].x;
@@ -72,8 +82,8 @@ function countdown() {
 
     --currentTime;
     expected += interval;
-    timer = setTimeout(countdown, Math.max(0, interval - dt));
-
+    timer = setTimeout(countdown, Math.max(0, interval - dt));    
+    
     if (currentTime.toString().length > 1) {
         $("#timer").text("Time remaining: 0:" + currentTime);
     } else {
@@ -89,15 +99,15 @@ function countdown() {
 //checks if future pixel location will be on a wall or the goal
 function checkCollision(newX, newY) {
     if (newX > 0 && newY > 0 && newX < (canvas.width - rectWidth) && newY < (canvas.height - rectHeight)) {
-        let pix = ctx.getImageData(newX, newY, 10, 10).data,
+        let pixels = ctx.getImageData(newX, newY, rectWidth, rectHeight).data,
             collision = 3,
             i = 0;
 
         for (i; i < 4 * rectWidth * rectHeight; i += 4) {
-            if (pix[i] === 0 && pix[i + 1] === 0 && pix[i + 2] === 0 && pix[i + 3]) {
+            if (pixels[i] === 0 && pixels[i + 1] === 0 && pixels[i + 2] === 0) {
                 collision = 1; //moving into a wall
                 break;
-            } else if (pix[i] === 0 && pix[i + 1] === 128 && pix[i + 2] === 0 && pix[i + 3]) {
+            } else if (pixels[i] === 127 && pixels[i + 1] === 191 && pixels[i + 2] === 127) {
                 collision = 2; //moving into the goal
                 break;
             }
@@ -127,8 +137,8 @@ function checkCollision(newX, newY) {
 
 //prepare success or fail screen
 function result() {
-    clearTimeout(timer);
     $(document).off("keydown", keyListener);
+    clearTimeout(timer);
     ctx.fillStyle = "rgba(255, 255, 255, .8)";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.font = "35px serif";
@@ -156,3 +166,5 @@ function keyListener(e) {
         break;
     }
 }
+
+intro();
