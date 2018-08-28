@@ -19,6 +19,16 @@ let timer,
     y = levels[currentLevel].y;
 
 function intro() {
+    var i = 0;
+    for (i; i < levels.length; i++) {
+        $.ajax({
+            url: levels[i].image,
+            async: false,
+            error: function() {
+                console.log("Image " + (i + 1) + " does not exist");
+            }
+        })
+    }
     ctx.font = "45px serif";
     ctx.fillText("Maze Game", canvas.width / 2 - ctx.measureText("Maze Game").width / 2, canvas.height / 4);
     ctx.font = "20px serif";
@@ -121,7 +131,7 @@ function checkCollision(newX, newY) {
             ctx.fillStyle = "rgb(0, 0, 255)";
             ctx.fillRect(x, y, rectWidth, rectHeight);
             if (collision === 2) { //goal reached
-                if (currentLevel !== 2) { //if on last level(3)
+                if (currentLevel < levels.length) { //if on last level(3)
                     currentLevel++;
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
                     drawEverything();
