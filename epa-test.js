@@ -15,31 +15,12 @@ let timer,
     currentTime,
     expected,
     currentLevel = 0,
-    x = levels[currentLevel].x,
-    y = levels[currentLevel].y;
-
-function intro() {
-    var i = 0;
-    for (i; i < levels.length; i++) {
-        $.ajax({
-            url: levels[i].image,
-            async: false,
-            error: function() {
-                console.log("Image " + (i + 1) + " does not exist");
-            }
-        })
-    }
-    ctx.font = "45px serif";
-    ctx.fillText("Maze Game", canvas.width / 2 - ctx.measureText("Maze Game").width / 2, canvas.height / 4);
-    ctx.font = "20px serif";
-    ctx.fillText("There are three levels.", canvas.width / 2 - ctx.measureText("There are three levels.").width / 2, canvas.height * 0.4);
-    ctx.fillText("You have 1 minute to complete each.", canvas.width / 2 - ctx.measureText("You have 1 minute to complete each.").width / 2, canvas.height / 2);
-    ctx.fillText("Click start to begin.", canvas.width / 2 - ctx.measureText("Click start to begin.").width / 2, canvas.height * 0.6);
-}
+    x,
+    y;
 
 //show maze and start timer
 $("#start").on("click", function () {
-    $(this).css("display", "none");
+    $(this).hide();
     $(document).on("keydown", keyListener);
     drawEverything();
 });
@@ -48,7 +29,7 @@ $("#start").on("click", function () {
 $("#retry").on("click", function () {
     ctx.fillStyle = "rgb(255, 255, 255)";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-    $(this).css("display", "none");
+    $(this).hide();
     $(document).on("keydown", keyListener);
     $("#timer").text("Time remaining: 1:00");
     drawEverything();
@@ -56,43 +37,63 @@ $("#retry").on("click", function () {
 
 //back to menu
 $("#menu").on("click", function () {
-    $(this).css("display", "none");
+    $(this).hide();
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     $(document).off("keydown", keyListener);
-    $("#start").css("display", "block");
+    $("#start").show();
     $("#timer").text("Time remaining: 1:00");
-    intro();
+    loadMenu();
 });
 
-//load maze and draw rectangle and goal
+//loads main menu
+function loadMenu() {
+    $("#start").show();
+    ctx.font = "45px serif";
+    ctx.fillText("Maze Game", canvas.width / 2 - ctx.measureText("Maze Game").width / 2, canvas.height / 4);
+    ctx.font = "20px serif";
+    ctx.fillText("There are three levels.",
+                 canvas.width / 2 - ctx.measureText("There are three levels.").width / 2, canvas.height * 0.4);
+    ctx.fillText("You have 1 minute to complete each.",
+                 canvas.width / 2 - ctx.measureText("You have 1 minute to complete each.").width / 2, canvas.height / 2);
+    ctx.fillText("Click start to begin.",
+                 canvas.width / 2 - ctx.measureText("Click start to begin.").width / 2, canvas.height * 0.6);
+}
+
+//load maze, draw controllable object and goal, and set timer
 function drawEverything() {
     let mazeImage = new Image();
-    $("#timer").text("Time Remaining: 1:00");
-    currentTime = 60;
-    expected = Date.now() + interval;
-    countdown();
     mazeImage.onload = function () {
+        //draw the maze
         ctx.drawImage(mazeImage, 0, 0, 500, 500);
 
+        //draw the controllable object
         ctx.fillStyle = "rgb(0, 0, 255)";
         x = levels[currentLevel].x;
         y = levels[currentLevel].y;
         ctx.fillRect(x, y, rectWidth, rectHeight);
 
+        //draw the goal
         ctx.fillStyle = "rgba(0, 128, 0, .5)";
         ctx.fillRect(levels[currentLevel].goalX, levels[currentLevel].goalY, 15, 15);
+        
+        //set the timer
+        $("#timer").text("Time Remaining: 1:00");
+        currentTime = 60;
+        expected = Date.now() + interval;
+        countdown();
     };
     mazeImage.crossOrigin = "anonymous";
     mazeImage.src = levels[currentLevel].image;
 }
 
-//loads timer
+//repeatedly calls itself to create timer
 function countdown() {
     let dt = Date.now() - expected;
 
     --currentTime;
     expected += interval;
-    timer = setTimeout(countdown, Math.max(0, interval - dt));    
+    clearTimeout(timer);
+    timer = setTimeout(countdown, Math.max(0, interval - dt)); 
     
     if (currentTime.toString().length > 1) {
         $("#timer").text("Time remaining: 0:" + currentTime);
@@ -101,7 +102,7 @@ function countdown() {
         if (currentTime === 0) {
             result();
             ctx.fillText("Time's up!", canvas.width / 2 - ctx.measureText("Time's up!").width / 2, canvas.height / 2);
-            $("#retry").css("display", "block");
+            $("#retry").show();
         }
     }
 }
@@ -131,14 +132,14 @@ function checkCollision(newX, newY) {
             ctx.fillStyle = "rgb(0, 0, 255)";
             ctx.fillRect(x, y, rectWidth, rectHeight);
             if (collision === 2) { //goal reached
-                if (currentLevel < levels.length) { //if on last level(3)
-                    currentLevel++;
+                if (currentLevel + 1 !== levels.length) { //if not on last level
+                    ++currentLevel;
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
                     drawEverything();
                 } else {
                     result();
                     ctx.fillText("Success!", canvas.width / 2 - ctx.measureText("Success!").width / 2, canvas.height / 2);
-                    $("#menu").css("display", "block");
+                    $("#menu").show();
                 }
             }
         }
@@ -155,7 +156,7 @@ function result() {
     ctx.fillStyle = "rgb(0, 0, 0)";
 }
 
-//direction button and wasd event listeners
+//directional buttons and wasd key event listeners
 function keyListener(e) {
     switch (e.key) {
     case "ArrowUp":
@@ -177,4 +178,4 @@ function keyListener(e) {
     }
 }
 
-intro();
+loadMenu();
