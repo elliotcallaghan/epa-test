@@ -1,33 +1,26 @@
 .canvas-container {
-    display: flex;
     border: 1px solid black;
     position: absolute;
-    flex-direction: column;
-    width: 500px;
-    height: 500px
 }
 
 #timer {
-    width: 500px;
     font-weight: bold;
-    background: gray;
-    border: 1px solid black;
-    border-bottom: none;
+    background: darkgray;
+    border-bottom: 1px solid black;
     text-align: center
 }
 
-input[type="button"] {
-    position: relative;
-    width: 25%;
-    align-self: center;
-    bottom: 160px;
-    cursor: pointer;
-    padding: 10px 0 23px
+.button-container {
+    display: flex;
+    justify-content: center;
+    height: 0
 }
 
-#start,
-#retry,
-#menu {
+input[type="button"] {
     display: none;
-    bottom: 140px
+    position: relative;
+    cursor: pointer;
+    padding: 10px 20px 25px;
+    bottom: 140px;
+    margin: 0 10px
 }
