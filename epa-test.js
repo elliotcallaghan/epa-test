@@ -12,7 +12,7 @@ const canvas = document.getElementById("canvas"),
       ];
 
 let timer,
-    currentTime,
+    currentTime = 60,
     expected,
     currentLevel,
     x,
@@ -20,7 +20,7 @@ let timer,
 
 //show maze and start timer
 $("#start").on("click", function () {
-    $(this).hide();
+    $("#start").hide();
     $(document).on("keydown", keyListener);
     $(document).on("keydown", togglePause);
     drawEverything();
@@ -33,6 +33,7 @@ $("#retry").on("click", function () {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     $(document).on("keydown", keyListener);
     $(document).on("keydown", keyListener);
+    currentTime = 60;
     $("#timer").text("Time remaining: 1:00");
     drawEverything();
 });
@@ -45,6 +46,11 @@ $("#menu").on("click", function () {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     $(document).off("keydown");
     $("#start").show();
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    $(document).off("keydown");
+    clearTimeout(timer);
+    timer = null;
+    currentTime = 60;
     $("#timer").text("Time remaining: 1:00");
     loadMenu();
 });
@@ -83,10 +89,8 @@ function drawEverything() {
         ctx.fillRect(levels[currentLevel].goalX, levels[currentLevel].goalY, 15, 15);
         
         //set the timer
-        $("#timer").text("Time Remaining: 1:00");
-        currentTime = 60;
         expected = Date.now() + interval;
-        countdown();
+        setTimeout(countdown, interval);
     };
     mazeImage.crossOrigin = "anonymous";
     mazeImage.src = levels[currentLevel].image;
@@ -141,8 +145,12 @@ function checkCollision(newX, newY) {
             ctx.fillRect(x, y, rectWidth, rectHeight);
             if (collision === 2) { //goal reached
                 if (currentLevel + 1 !== levels.length) { //if not on last level
+                    clearTimeout(timer);
+                    timer = null;
                     ++currentLevel;
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    $("#timer").text("Time remaining: 1:00");
+                    currentTime = 60;
                     drawEverything();
                 } else {
                     $(document).off("keydown");
