@@ -1,14 +1,12 @@
-//https://hereandabove.com/maze/mazeorig.form.html
-
 const canvas = document.getElementById("canvas"),
       ctx = canvas.getContext("2d"),
-      rectWidth = 10,
-      rectHeight = 10,
+      rectWidth = 11,
+      rectHeight = 11,
       interval = 1000,
       levels = [
-          {image: "https://elliotcallaghan.co.uk/maze1.png", x: 1, y: 1, goalX: 30, goalY: 1},
-          {image: "https://elliotcallaghan.co.uk/maze2.png", x: 1, y: 1, goalX: 30, goalY: 1},
-          {image: "https://elliotcallaghan.co.uk/maze3.png", x: 1, y: 1, goalX: 30, goalY: 1},
+          {image: "https://elliotcallaghan.co.uk/maze1.png", x: 1, y: 1, goalX: 176, goalY: 378},
+          {image: "https://elliotcallaghan.co.uk/maze2.png", x: 1, y: 1, goalX: 302, goalY: 302},
+          {image: "https://elliotcallaghan.co.uk/maze3.png", x: 1, y: 1, goalX: 352, goalY: 428},
       ];
 
 let timer,
@@ -86,7 +84,7 @@ function drawEverything() {
 
         //draw the goal
         ctx.fillStyle = "rgb(127, 191, 127)";
-        ctx.fillRect(levels[currentLevel].goalX, levels[currentLevel].goalY, 15, 15);
+        ctx.fillRect(levels[currentLevel].goalX, levels[currentLevel].goalY, 22, 22);
         
         //set the timer
         expected = Date.now() + interval;
@@ -104,12 +102,13 @@ function countdown() {
     expected += interval;
     clearTimeout(timer);
     timer = null;
-    timer = setTimeout(countdown, Math.max(0, interval - dt)); 
     
     if (currentTime.toString().length > 1) {
         $("#timer").text("Time remaining: 0:" + currentTime);
+        timer = setTimeout(countdown, Math.max(0, interval - dt)); 
     } else {
         $("#timer").text("Time remaining: 0:0" + currentTime);
+        timer = setTimeout(countdown, Math.max(0, interval - dt)); 
         if (currentTime === 0) {
             $(document).off("keydown");
             result();
