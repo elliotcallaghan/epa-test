@@ -4,7 +4,7 @@ const canvas = document.getElementById("canvas"),
       rectHeight = 11,
       interval = 1000,
       levels = [
-          {image: "https://elliotcallaghan.co.uk/maze1.png", x: 1, y: 1, goalX: 176, goalY: 378},
+          {image: "https://elliotcallaghan.co.uk/maze1.pn", x: 1, y: 1, goalX: 176, goalY: 378},
           {image: "https://elliotcallaghan.co.uk/maze2.png", x: 1, y: 1, goalX: 302, goalY: 302},
           {image: "https://elliotcallaghan.co.uk/maze3.png", x: 1, y: 1, goalX: 352, goalY: 428},
       ];
@@ -20,11 +20,13 @@ let timer,
 //show maze and start timer
 $("#start").on("click", function () {
     $("#start").hide();
-    $(document).on("keydown", keyListener);
-    $(document).on("keydown", togglePause);
-    drawEverything();
-    expected = Date.now() + interval;
-    timer = setTimeout(countdown, interval);
+    //drawEverything();
+    if (drawEverything() !== false) {
+        $(document).on("keydown", keyListener);
+        $(document).on("keydown", togglePause);
+        expected = Date.now() + interval;
+        timer = setTimeout(countdown, interval);
+    }
 });
 
 //reset position and timer
@@ -90,7 +92,15 @@ function drawEverything() {
         ctx.fillRect(levels[currentLevel].goalX, levels[currentLevel].goalY, 22, 22);
     };
     mazeImage.crossOrigin = "anonymous";
-    mazeImage.src = levels[currentLevel].image;
+    $.get(levels[currentLevel].image, function() {
+        mazeImage.src = levels[currentLevel].image;
+    }).fail(function () {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.font = "20px serif";
+        ctx.fillStyle = "rgb(255, 0, 0)";
+        ctx.fillText("Image not found.", canvas.width / 2 - ctx.measureText("Image not found.").width / 2, canvas.height / 2);
+        return false;
+    })
 }
 
 //repeatedly calls itself to create timer
