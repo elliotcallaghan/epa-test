@@ -13,6 +13,7 @@ let timer,
     currentTime = 60,
     expected,
     currentLevel,
+    pauseInterval,
     x,
     y;
 
@@ -22,6 +23,8 @@ $("#start").on("click", function () {
     $(document).on("keydown", keyListener);
     $(document).on("keydown", togglePause);
     drawEverything();
+    expected = Date.now() + interval;
+    timer = setTimeout(countdown, interval);
 });
 
 //reset position and timer
@@ -30,10 +33,12 @@ $("#retry").on("click", function () {
     ctx.fillStyle = "rgb(255, 255, 255)";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     $(document).on("keydown", keyListener);
-    $(document).on("keydown", keyListener);
+    $(document).on("keydown", togglePause);
     currentTime = 60;
     $("#timer").text("Time remaining: 1:00");
     drawEverything();
+    expected = Date.now() + interval;
+    timer = setTimeout(countdown, interval);
 });
 
 //back to menu
@@ -46,8 +51,6 @@ $("#menu").on("click", function () {
     $("#start").show();
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     $(document).off("keydown");
-    clearTimeout(timer);
-    timer = null;
     currentTime = 60;
     $("#timer").text("Time remaining: 1:00");
     loadMenu();
@@ -85,10 +88,6 @@ function drawEverything() {
         //draw the goal
         ctx.fillStyle = "rgb(127, 191, 127)";
         ctx.fillRect(levels[currentLevel].goalX, levels[currentLevel].goalY, 22, 22);
-        
-        //set the timer
-        expected = Date.now() + interval;
-        setTimeout(countdown, interval);
     };
     mazeImage.crossOrigin = "anonymous";
     mazeImage.src = levels[currentLevel].image;
@@ -98,23 +97,22 @@ function drawEverything() {
 function countdown() {
     let dt = Date.now() - expected;
 
+    pauseInterval = Date.now();
     --currentTime;
     expected += interval;
     clearTimeout(timer);
     timer = null;
-    
+
     if (currentTime.toString().length > 1) {
         $("#timer").text("Time remaining: 0:" + currentTime);
-        timer = setTimeout(countdown, Math.max(0, interval - dt)); 
+        timer = setTimeout(countdown, Math.max(0, interval - dt));
     } else {
         $("#timer").text("Time remaining: 0:0" + currentTime);
-        timer = setTimeout(countdown, Math.max(0, interval - dt)); 
+        timer = setTimeout(countdown, Math.max(0, interval - dt));
         if (currentTime === 0) {
-            $(document).off("keydown");
             result();
             ctx.fillText("Time's up!", canvas.width / 2 - ctx.measureText("Time's up!").width / 2, canvas.height / 2);
-            $("#menu").show();
-            $("#retry").show();
+            $("#menu, #retry").show();
         }
     }
 }
@@ -151,8 +149,9 @@ function checkCollision(newX, newY) {
                     $("#timer").text("Time remaining: 1:00");
                     currentTime = 60;
                     drawEverything();
+                    expected = Date.now() + interval;
+                    timer = setTimeout(countdown, interval);
                 } else {
-                    $(document).off("keydown");
                     result();
                     ctx.fillText("Success!", canvas.width / 2 - ctx.measureText("Success!").width / 2, canvas.height / 2);
                     $("#menu").show();
@@ -170,24 +169,25 @@ function togglePause(e) {
             $(document).on("keydown", keyListener);
             drawEverything();
             expected = Date.now() + interval;
-            countdown();
+            timer = setTimeout(countdown, interval - pauseInterval);
         } else {
             $(document).off("keydown", keyListener);
             clearTimeout(timer);
             timer = null;
+            pauseInterval -= Date.now();
             ctx.fillStyle = "rgb(255, 255, 255)";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             ctx.font = "35px serif";
             ctx.fillStyle = "rgb(0, 0, 0)";
             ctx.fillText("Paused", canvas.width / 2 - ctx.measureText("Paused").width / 2, canvas.height / 2);
-            $("#menu").show();
-            $("#retry").show();
+            $("#menu, #retry").show();
         }
     }
 }
 
 //prepare success or fail screen
 function result() {
+    $(document).off("keydown");
     clearTimeout(timer);
     timer = null;
     ctx.fillStyle = "rgba(255, 255, 255, .8)";
